@@ -7,6 +7,7 @@ use App\Models\Cart;
 use App\Models\OrderItem;
 use App\Models\Ragister;
 use Illuminate\Support\FacaDes\DB;
+use Illuminate\Support\FacaDes\Session;
 
 
 use Illuminate\Http\Request;
@@ -49,8 +50,9 @@ class OrderController extends Controller
 
         $id = $request->input('id');
         $prod_id = $request->input('prod_id');
-    
+        $v = $request->session()->get('USER_ID');
         $order = new Order();
+        $order->user_id = $v;
         $order->fname = $request->input('fname');
         $order->lname = $request->input('lname');
         $order->email = $request->input('email');
@@ -61,13 +63,12 @@ class OrderController extends Controller
         $order->city = $request->input('city');
         $order->payment_id = $request->input('payment_id');
         $order->payment_mode = $request->input('payment_mode');
-
         $order->save();
         $s = session()->get('USER_ID');
        $cartItem = Cart::where('USER_ID',$s)->get();
         foreach($cartItem as $item){
             $orderItem = new OrderItem();
-               
+                $orderItem->user_id = $s;
                 $orderItem->order_id =  $order->id;
                 $orderItem->prod_id  =  $item->prod_id;
                 $orderItem->qty      =  $item->prod_qty;
@@ -86,10 +87,6 @@ class OrderController extends Controller
        
 
     }
-
-
-    
-
     /**
      * Display the specified resource.
      *
@@ -136,7 +133,7 @@ class OrderController extends Controller
     }
     public function order(){
         $o = session()->get('USER_ID');
-        $order = Order::where('USER_ID',$s)->get();
+        $order = Order::where('USER_ID',$o)->get();
         return view('project.order-view',compact('order'));
     }
     public function addrezorpay(Request $request){
